@@ -183,24 +183,38 @@ html, body {
 }
 #combatScreen.hidden { display: none; }
 
-/* Combat scene backdrop */
+/* Combat scene backdrop — pixel dungeon */
 #sceneBg {
   position: absolute; inset: 0;
-  background:
-    radial-gradient(ellipse 70% 50% at 50% 30%, rgba(255,180,100,0.06) 0%, transparent 65%),
-    radial-gradient(ellipse 100% 50% at 50% 100%, rgba(0,0,0,0.55) 0%, transparent 60%),
-    linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.45) 100%);
   pointer-events: none;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 25%, rgba(255,180,100,0.08) 0%, transparent 60%),
+    linear-gradient(180deg, #1a0a18 0%, #0a040a 65%, #06030a 100%);
 }
-/* ground line */
-#sceneBg::after {
-  content: '';
+#sceneBg svg.scene {
   position: absolute;
-  left: 0; right: 0;
-  bottom: 250px;
-  height: 5px;
-  background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.6) 20%, rgba(0,0,0,0.6) 80%, transparent 100%);
-  filter: blur(2px);
+  inset: 0;
+  width: 100%; height: 100%;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+/* torch flame flicker */
+.torch-flame { animation: torchFlick 0.18s steps(2) infinite; transform-origin: center bottom; }
+@keyframes torchFlick {
+  0%   { transform: translateY(0) scaleY(1); opacity: 1; }
+  50%  { transform: translateY(-1px) scaleY(1.08); opacity: 0.92; }
+  100% { transform: translateY(0) scaleY(0.96); opacity: 1; }
+}
+.torch-glow { animation: torchGlow 1.4s ease-in-out infinite; transform-origin: center; }
+@keyframes torchGlow {
+  0%,100% { opacity: 0.55; }
+  50%     { opacity: 0.85; }
+}
+.ember { animation: emberRise linear infinite; }
+@keyframes emberRise {
+  from { transform: translateY(0) translateX(0); opacity: 0.9; }
+  to   { transform: translateY(-200px) translateX(var(--ex, 6px)); opacity: 0; }
 }
 
 #battle {
@@ -328,12 +342,24 @@ html, body {
   text-shadow: 1px 1px 0 #000, -1px -1px 0 #000;
 }
 
-/* idle bob on creatures */
-.idleBob { animation: idleBob 3.2s ease-in-out infinite; }
-@keyframes idleBob {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-4px); }
-}
+/* pixel sprite rendering */
+.sprite svg { image-rendering: pixelated; image-rendering: crisp-edges; width: 100%; height: 100%; display: block; }
+
+/* per-creature idle animations */
+.idleBob    { animation: idleBob    3.2s ease-in-out infinite; transform-origin: center bottom; }
+.idleFloat  { animation: idleFloat  3.4s ease-in-out infinite; }
+.idleSquish { animation: idleSquish 1.6s ease-in-out infinite; transform-origin: center bottom; }
+.idleWiggle { animation: idleWiggle 2.6s ease-in-out infinite; transform-origin: center center; }
+.idlePulse  { animation: idlePulse  2.0s ease-in-out infinite; transform-origin: center center; }
+.idleBreath { animation: idleBreath 3.6s ease-in-out infinite; transform-origin: center bottom; }
+.idleSway   { animation: idleSway   4.0s ease-in-out infinite; transform-origin: center bottom; }
+@keyframes idleBob    { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes idleFloat  { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+@keyframes idleSquish { 0%,100% { transform: scaleY(1)    scaleX(1);    } 50% { transform: scaleY(0.86) scaleX(1.10); } }
+@keyframes idleWiggle { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes idlePulse  { 0%,100% { transform: scale(1);     filter: drop-shadow(0 0 0 transparent); } 50% { transform: scale(1.07); filter: drop-shadow(0 0 16px #ff6080); } }
+@keyframes idleBreath { 0%,100% { transform: scaleY(1) translateY(0); } 50% { transform: scaleY(1.04) translateY(-2px); } }
+@keyframes idleSway   { 0%,100% { transform: translateX(-3px) rotate(-1.5deg); } 50% { transform: translateX(3px) rotate(1.5deg); } }
 
 /* float numbers */
 .floatNum {
@@ -895,17 +921,105 @@ function noise(d, v=0.12, f=2000, dl=0) {
   s.connect(fi).connect(g).connect(audioCtx.destination);
   s.start(t0);
 }
-function sndBlock()    { tone(440, 0.06, 'triangle', 0.12); tone(660, 0.08, 'triangle', 0.10, 0.04); }
-function sndCardPlay() { noise(0.04, 0.10, 2400); tone(300, 0.04, 'triangle', 0.06, 0.02); }
-function sndCardDraw() { noise(0.03, 0.06, 3000); }
-function sndEnemyHit() { tone(120, 0.12, 'sawtooth', 0.16); noise(0.08, 0.10, 1200, 0.02); }
-function sndPlayerHit(){ tone(80,  0.18, 'sawtooth', 0.18); noise(0.12, 0.14, 800, 0.04); }
-function sndEnemyDie() { tone(220,0.10,'sawtooth',0.14); tone(165,0.13,'sawtooth',0.14,0.08); tone(110,0.22,'sawtooth',0.14,0.18); }
-function sndVictory()  { tone(523,0.08,'square',0.14); tone(659,0.08,'square',0.14,0.08); tone(784,0.10,'square',0.14,0.16); tone(1046,0.20,'square',0.14,0.26); }
-function sndDefeat()   { tone(330,0.18,'sawtooth',0.16); tone(220,0.22,'sawtooth',0.16,0.16); tone(165,0.30,'sawtooth',0.16,0.34); }
-function sndButton()   { tone(720,0.025,'square',0.10); }
-function sndStatus()   { tone(540, 0.07, 'square', 0.10); tone(440, 0.07, 'square', 0.10, 0.04); }
-function sndHover()    { tone(1000, 0.022, 'sine', 0.05); }
+// ===== MAGICAL TONES =====
+let _reverb = null;
+function getReverb() {
+  if (!audioCtx) return null;
+  if (_reverb) return _reverb;
+  const conv = audioCtx.createConvolver();
+  const len  = Math.floor(audioCtx.sampleRate * 1.6);
+  const ir   = audioCtx.createBuffer(2, len, audioCtx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const d = ir.getChannelData(ch);
+    for (let i = 0; i < len; i++) d[i] = (Math.random()*2 - 1) * Math.pow(1 - i/len, 2.4);
+  }
+  conv.buffer = ir;
+  const wetGain = audioCtx.createGain();
+  wetGain.gain.value = 0.35;
+  conv.connect(wetGain).connect(audioCtx.destination);
+  _reverb = { input: conv };
+  return _reverb;
+}
+function bell(freq, dur=0.7, vol=0.16, delay=0) {
+  if (muted || !audioCtx) return;
+  const t0 = audioCtx.currentTime + delay;
+  const harmonics = [1, 2.0, 2.76, 5.4];
+  const weights   = [1.0, 0.55, 0.32, 0.16];
+  const rev = getReverb();
+  for (let i = 0; i < harmonics.length; i++) {
+    const o = audioCtx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = freq * harmonics[i];
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(vol * weights[i], t0 + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(audioCtx.destination);
+    if (rev) g.connect(rev.input);
+    o.start(t0); o.stop(t0 + dur + 0.06);
+  }
+}
+function shimmer(base=560, steps=5, spacing=0.045, vol=0.07) {
+  if (muted || !audioCtx) return;
+  const ratios = [1, 1.25, 1.5, 2.0, 2.5, 3.0];
+  const rev = getReverb();
+  for (let i = 0; i < steps; i++) {
+    const t0 = audioCtx.currentTime + i * spacing;
+    const o = audioCtx.createOscillator();
+    o.type = 'sine';
+    o.frequency.value = base * ratios[i % ratios.length];
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3);
+    o.connect(g).connect(audioCtx.destination);
+    if (rev) g.connect(rev.input);
+    o.start(t0); o.stop(t0 + 0.34);
+  }
+}
+function arpeggio(notes, speed=0.07, vol=0.12) {
+  if (muted || !audioCtx) return;
+  const rev = getReverb();
+  for (let i = 0; i < notes.length; i++) {
+    const t0 = audioCtx.currentTime + i * speed;
+    const o = audioCtx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.value = notes[i];
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0, t0);
+    g.gain.linearRampToValueAtTime(vol, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.4);
+    o.connect(g).connect(audioCtx.destination);
+    if (rev) g.connect(rev.input);
+    o.start(t0); o.stop(t0 + 0.45);
+  }
+}
+function thump(freq=70, dur=0.25, vol=0.22) {
+  if (muted || !audioCtx) return;
+  const t0 = audioCtx.currentTime;
+  const o = audioCtx.createOscillator();
+  o.type = 'sine';
+  o.frequency.setValueAtTime(freq*2, t0);
+  o.frequency.exponentialRampToValueAtTime(freq, t0 + 0.1);
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(0, t0);
+  g.gain.linearRampToValueAtTime(vol, t0 + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+  o.connect(g).connect(audioCtx.destination);
+  o.start(t0); o.stop(t0 + dur + 0.02);
+}
+
+function sndBlock()    { bell(523.25, 0.55, 0.13); bell(783.99, 0.45, 0.09, 0.03); }
+function sndCardPlay() { shimmer(440, 4, 0.04, 0.08); }
+function sndCardDraw() { shimmer(880, 2, 0.03, 0.05); }
+function sndEnemyHit() { thump(140, 0.18, 0.18); shimmer(880, 3, 0.025, 0.05); }
+function sndPlayerHit(){ thump(70, 0.30, 0.22); noise(0.18, 0.12, 600, 0.04); }
+function sndEnemyDie() { arpeggio([392, 329.6, 261.6, 196], 0.08, 0.13); }
+function sndVictory()  { arpeggio([523.25, 659.25, 783.99, 1046.50], 0.10, 0.14); shimmer(1318.5, 6, 0.06, 0.07); }
+function sndDefeat()   { arpeggio([293.66, 246.94, 196, 164.81], 0.18, 0.16); thump(60, 0.5, 0.18); }
+function sndButton()   { bell(880, 0.18, 0.10); }
+function sndStatus()   { arpeggio([523.25, 622.25, 783.99], 0.05, 0.10); }
+function sndHover()    { bell(1318.5, 0.12, 0.05); }
 function toggleMute() {
   unlockAudio();
   muted = !muted;
@@ -920,236 +1034,341 @@ document.getElementById('muteBtn').textContent = muted ? '♪ OFF' : '♪ ON';
 // ============================================================
 const ART = {};
 
-ART.player = `<svg viewBox="0 0 120 160">
-  <defs>
-    <linearGradient id="kn-a" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#a89a78"/>
-      <stop offset="55%" stop-color="#4a3a28"/>
-      <stop offset="100%" stop-color="#1a1408"/>
-    </linearGradient>
-  </defs>
-  <ellipse cx="32" cy="86" rx="22" ry="34" fill="#7a1828" stroke="#000" stroke-width="3"/>
-  <ellipse cx="32" cy="86" rx="15" ry="25" fill="#3a0810" stroke="#d4a73e" stroke-width="2"/>
-  <path d="M25,76 L39,76 L32,98 Z" fill="#d4a73e"/>
-  <path d="M40,55 L80,55 L86,124 L34,124 Z" fill="url(#kn-a)" stroke="#000" stroke-width="3"/>
-  <path d="M50,68 L70,68 L74,112 L46,112 Z" fill="#3a2a18" stroke="#d4a73e" stroke-width="1.5"/>
-  <rect x="40" y="122" width="14" height="32" fill="#2a1810" stroke="#000" stroke-width="2"/>
-  <rect x="66" y="122" width="14" height="32" fill="#2a1810" stroke="#000" stroke-width="2"/>
-  <path d="M42,28 Q60,8 78,28 L80,52 Q60,57 40,52 Z" fill="url(#kn-a)" stroke="#000" stroke-width="3"/>
-  <path d="M42,28 Q34,10 28,16 Q33,22 42,32 Z" fill="#5a3a20" stroke="#000" stroke-width="2"/>
-  <path d="M78,28 Q86,10 92,16 Q87,22 78,32 Z" fill="#5a3a20" stroke="#000" stroke-width="2"/>
-  <rect x="48" y="36" width="24" height="4" fill="#000"/>
-  <rect x="50" y="37" width="6" height="2" fill="#ff5028"/>
-  <rect x="64" y="37" width="6" height="2" fill="#ff5028"/>
-  <rect x="92" y="36" width="6" height="62" fill="#d8d0b8" stroke="#000" stroke-width="2"/>
-  <rect x="86" y="98" width="18" height="4" fill="#5a3a20" stroke="#000" stroke-width="2"/>
-  <rect x="88" y="102" width="14" height="14" fill="#3a2818" stroke="#000" stroke-width="2"/>
-  <polygon points="95,34 92,38 98,38" fill="#d8d0b8" stroke="#000" stroke-width="1.5"/>
+// ===== PIXEL-ART CHARACTER SPRITES (16-20px grids, shape-rendering crispEdges) =====
+ART.player = `<svg viewBox="0 0 18 22" shape-rendering="crispEdges" preserveAspectRatio="xMidYMid meet">
+  <rect x="5" y="0" width="8" height="1" fill="#1a1408"/>
+  <rect x="4" y="1" width="10" height="1" fill="#1a1408"/>
+  <rect x="3" y="2" width="12" height="5" fill="#1a1408"/>
+  <rect x="4" y="3" width="10" height="3" fill="#5a4a30"/>
+  <rect x="5" y="3" width="8" height="1" fill="#8a7448"/>
+  <rect x="5" y="4" width="8" height="1" fill="#000"/>
+  <rect x="6" y="4" width="2" height="1" fill="#ff5028"/>
+  <rect x="10" y="4" width="2" height="1" fill="#ff5028"/>
+  <rect x="5" y="6" width="8" height="1" fill="#3a2a18"/>
+  <rect x="7" y="7" width="4" height="1" fill="#2a1810"/>
+  <rect x="2" y="8" width="14" height="1" fill="#1a1408"/>
+  <rect x="2" y="9" width="14" height="6" fill="#1a1408"/>
+  <rect x="3" y="9" width="12" height="5" fill="#6a5a3e"/>
+  <rect x="3" y="11" width="12" height="1" fill="#d4a73e"/>
+  <rect x="8" y="12" width="2" height="2" fill="#a82828"/>
+  <rect x="8" y="12" width="1" height="1" fill="#ff8080"/>
+  <rect x="0" y="9" width="2" height="6" fill="#1a1408"/>
+  <rect x="0" y="10" width="2" height="4" fill="#7a1828"/>
+  <rect x="0" y="11" width="1" height="2" fill="#a82828"/>
+  <rect x="16" y="2" width="1" height="8" fill="#d8d0b8"/>
+  <rect x="15" y="10" width="3" height="1" fill="#d4a73e"/>
+  <rect x="16" y="11" width="1" height="3" fill="#3a2818"/>
+  <rect x="4" y="15" width="3" height="5" fill="#1a1408"/>
+  <rect x="11" y="15" width="3" height="5" fill="#1a1408"/>
+  <rect x="4" y="15" width="3" height="4" fill="#2a1810"/>
+  <rect x="11" y="15" width="3" height="4" fill="#2a1810"/>
+  <rect x="3" y="20" width="5" height="2" fill="#0a0204"/>
+  <rect x="10" y="20" width="5" height="2" fill="#0a0204"/>
 </svg>`;
 
-ART.gnashmaw = `<svg viewBox="0 0 120 120">
-  <defs><radialGradient id="gm" cx="50%" cy="35%" r="65%">
-    <stop offset="0%" stop-color="#a08440"/><stop offset="55%" stop-color="#503820"/><stop offset="100%" stop-color="#1a0e08"/>
-  </radialGradient></defs>
-  <ellipse cx="60" cy="68" rx="50" ry="48" fill="url(#gm)" stroke="#000" stroke-width="3"/>
-  <ellipse cx="42" cy="30" rx="14" ry="6" fill="#fff" opacity="0.13"/>
-  <ellipse cx="60" cy="80" rx="34" ry="14" fill="#1a0408"/>
-  <path d="M28,72 L34,86 L40,72 L46,86 L52,72 L58,86 L64,72 L70,86 L76,72 L82,86 L88,72 L94,86 Z" fill="#f4e8c1" stroke="#000" stroke-width="1.5"/>
-  <path d="M28,88 L34,74 L40,88 L46,74 L52,88 L58,74 L64,88 L70,74 L76,88 L82,74 L88,88 Z" fill="#d4c8a1" stroke="#000" stroke-width="1.5"/>
-  <ellipse cx="42" cy="44" rx="8" ry="9" fill="#0a0408" stroke="#000" stroke-width="2"/>
-  <ellipse cx="78" cy="44" rx="8" ry="9" fill="#0a0408" stroke="#000" stroke-width="2"/>
-  <ellipse cx="42" cy="42" rx="3" ry="4" fill="#ff8848"/>
-  <ellipse cx="78" cy="42" rx="3" ry="4" fill="#ff8848"/>
-  <circle cx="43" cy="40" r="1.5" fill="#ffeebb"/><circle cx="79" cy="40" r="1.5" fill="#ffeebb"/>
+ART.gnashmaw = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="4" y="0" width="8" height="1" fill="#1a0e08"/>
+  <rect x="2" y="1" width="12" height="1" fill="#1a0e08"/>
+  <rect x="1" y="2" width="14" height="12" fill="#1a0e08"/>
+  <rect x="2" y="14" width="12" height="1" fill="#1a0e08"/>
+  <rect x="4" y="15" width="8" height="1" fill="#1a0e08"/>
+  <rect x="2" y="2" width="12" height="12" fill="#7a5828"/>
+  <rect x="3" y="2" width="10" height="2" fill="#a08440"/>
+  <rect x="3" y="4" width="3" height="3" fill="#0a0204"/>
+  <rect x="4" y="5" width="1" height="1" fill="#ffaa30"/>
+  <rect x="10" y="4" width="3" height="3" fill="#0a0204"/>
+  <rect x="11" y="5" width="1" height="1" fill="#ffaa30"/>
+  <rect x="3" y="9" width="10" height="4" fill="#1a0204"/>
+  <rect x="3" y="9" width="1" height="2" fill="#f4e8c1"/>
+  <rect x="5" y="9" width="1" height="2" fill="#f4e8c1"/>
+  <rect x="7" y="9" width="1" height="2" fill="#f4e8c1"/>
+  <rect x="9" y="9" width="1" height="2" fill="#f4e8c1"/>
+  <rect x="11" y="9" width="1" height="2" fill="#f4e8c1"/>
+  <rect x="4" y="11" width="1" height="2" fill="#d4c089"/>
+  <rect x="6" y="11" width="1" height="2" fill="#d4c089"/>
+  <rect x="8" y="11" width="1" height="2" fill="#d4c089"/>
+  <rect x="10" y="11" width="1" height="2" fill="#d4c089"/>
+  <rect x="12" y="11" width="1" height="2" fill="#d4c089"/>
 </svg>`;
 
-ART.hooded = `<svg viewBox="0 0 120 120">
-  <defs><linearGradient id="hd" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#5a2070"/><stop offset="55%" stop-color="#2a0c40"/><stop offset="100%" stop-color="#0a0210"/>
-  </linearGradient></defs>
-  <path d="M25,116 L30,55 Q60,12 90,55 L95,116 Z" fill="url(#hd)" stroke="#000" stroke-width="3"/>
-  <path d="M30,55 Q45,38 60,40 Q75,38 90,55" fill="none" stroke="#000" stroke-width="2" opacity="0.45"/>
-  <path d="M42,50 Q60,38 78,50 L78,82 Q60,88 42,82 Z" fill="#040208"/>
-  <ellipse cx="50" cy="62" rx="5" ry="3" fill="#ff2030"/>
-  <ellipse cx="70" cy="62" rx="5" ry="3" fill="#ff2030"/>
-  <circle cx="50" cy="62" r="9" fill="#ff2030" opacity="0.22"/>
-  <circle cx="70" cy="62" r="9" fill="#ff2030" opacity="0.22"/>
-  <path d="M28,90 L32,116 L40,116 L36,90 Z" fill="#8a3aa8" opacity="0.55"/>
+ART.hooded = `<svg viewBox="0 0 16 20" shape-rendering="crispEdges">
+  <rect x="5" y="0" width="6" height="1" fill="#0a0210"/>
+  <rect x="4" y="1" width="8" height="1" fill="#0a0210"/>
+  <rect x="3" y="2" width="10" height="1" fill="#0a0210"/>
+  <rect x="2" y="3" width="12" height="6" fill="#0a0210"/>
+  <rect x="3" y="3" width="10" height="6" fill="#3a1450"/>
+  <rect x="4" y="3" width="8" height="1" fill="#5a2070"/>
+  <rect x="4" y="5" width="8" height="3" fill="#0a0210"/>
+  <rect x="5" y="6" width="2" height="1" fill="#ff2030"/>
+  <rect x="9" y="6" width="2" height="1" fill="#ff2030"/>
+  <rect x="5" y="6" width="1" height="1" fill="#ffaa80"/>
+  <rect x="9" y="6" width="1" height="1" fill="#ffaa80"/>
+  <rect x="1" y="9" width="14" height="1" fill="#0a0210"/>
+  <rect x="2" y="10" width="12" height="8" fill="#0a0210"/>
+  <rect x="3" y="10" width="10" height="8" fill="#3a1450"/>
+  <rect x="3" y="12" width="10" height="1" fill="#5a2070"/>
+  <rect x="7" y="13" width="2" height="2" fill="#a25ac0"/>
+  <rect x="7" y="13" width="1" height="1" fill="#e0a0ff"/>
+  <rect x="1" y="18" width="14" height="2" fill="#0a0210"/>
+  <rect x="2" y="18" width="12" height="1" fill="#2a0c40"/>
 </svg>`;
 
-function oozeSvg(palette, eyeColor) {
-  return `<svg viewBox="0 0 120 120">
-    <defs><radialGradient id="oz-${palette[0].replace('#','')}" cx="50%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="${palette[0]}"/><stop offset="55%" stop-color="${palette[1]}"/><stop offset="100%" stop-color="${palette[2]}"/>
-    </radialGradient></defs>
-    <path d="M20,90 Q25,120 35,114 Q45,121 50,107 Q60,121 70,109 Q80,121 90,107 Q100,120 100,90 Z" fill="url(#oz-${palette[0].replace('#','')})" stroke="#000" stroke-width="3"/>
-    <ellipse cx="60" cy="75" rx="42" ry="38" fill="url(#oz-${palette[0].replace('#','')})" stroke="#000" stroke-width="3"/>
-    <ellipse cx="46" cy="50" rx="14" ry="10" fill="#fff" opacity="0.28"/>
-    <ellipse cx="48" cy="70" rx="6" ry="8" fill="#fff" stroke="#000" stroke-width="2"/>
-    <ellipse cx="72" cy="70" rx="6" ry="8" fill="#fff" stroke="#000" stroke-width="2"/>
-    <ellipse cx="48" cy="72" rx="3" ry="4" fill="${eyeColor}"/>
-    <ellipse cx="72" cy="72" rx="3" ry="4" fill="${eyeColor}"/>
-    <path d="M48,88 Q60,96 72,88" stroke="#000" stroke-width="2" fill="none"/>
-  </svg>`;
-}
-ART.ooze_acid  = oozeSvg(['#a0e860','#4a7820','#1a3008'], '#0a3008');
-ART.ooze_spike = oozeSvg(['#c890e8','#6a3088','#280838'], '#1a0820');
-
-ART.watcher = `<svg viewBox="0 0 120 120">
-  <defs>
-    <radialGradient id="wt-orb" cx="50%" cy="35%" r="60%">
-      <stop offset="0%" stop-color="#8a98b0"/><stop offset="55%" stop-color="#3a4258"/><stop offset="100%" stop-color="#0a0e1a"/>
-    </radialGradient>
-  </defs>
-  <polygon points="22,60 60,18 98,60 60,102" fill="url(#wt-orb)" stroke="#000" stroke-width="3"/>
-  <polygon points="32,60 60,32 88,60 60,88" fill="#0a0e1a" stroke="#3a8ed0" stroke-width="2"/>
-  <circle cx="60" cy="60" r="14" fill="#000" stroke="#3a8ed0" stroke-width="2"/>
-  <circle cx="60" cy="60" r="10" fill="#3a8ed0"/>
-  <circle cx="60" cy="60" r="5" fill="#000"/>
-  <circle cx="62" cy="58" r="2" fill="#9be4ff"/>
-  <line x1="22" y1="60" x2="32" y2="60" stroke="#9be4ff" stroke-width="2"/>
-  <line x1="88" y1="60" x2="98" y2="60" stroke="#9be4ff" stroke-width="2"/>
-  <line x1="60" y1="18" x2="60" y2="32" stroke="#9be4ff" stroke-width="2"/>
-  <line x1="60" y1="88" x2="60" y2="102" stroke="#9be4ff" stroke-width="2"/>
+ART.ooze_acid = `<svg viewBox="0 0 16 14" shape-rendering="crispEdges">
+  <rect x="3" y="2" width="10" height="1" fill="#1a3008"/>
+  <rect x="2" y="3" width="12" height="1" fill="#1a3008"/>
+  <rect x="1" y="4" width="14" height="8" fill="#1a3008"/>
+  <rect x="2" y="12" width="12" height="1" fill="#1a3008"/>
+  <rect x="3" y="13" width="2" height="1" fill="#1a3008"/>
+  <rect x="7" y="13" width="2" height="1" fill="#1a3008"/>
+  <rect x="11" y="13" width="2" height="1" fill="#1a3008"/>
+  <rect x="2" y="4" width="12" height="8" fill="#4a7820"/>
+  <rect x="3" y="4" width="10" height="2" fill="#a0e860"/>
+  <rect x="3" y="6" width="3" height="2" fill="#fff" opacity="0.55"/>
+  <rect x="3" y="7" width="3" height="2" fill="#fff" stroke="#000" stroke-width="0"/>
+  <rect x="4" y="8" width="1" height="1" fill="#0a3008"/>
+  <rect x="10" y="7" width="3" height="2" fill="#fff"/>
+  <rect x="11" y="8" width="1" height="1" fill="#0a3008"/>
+  <rect x="5" y="10" width="6" height="1" fill="#0a3008"/>
 </svg>`;
 
-ART.mushman = `<svg viewBox="0 0 120 120">
-  <defs><radialGradient id="msh-c" cx="50%" cy="40%" r="70%">
-    <stop offset="0%" stop-color="#d04040"/><stop offset="55%" stop-color="#6a1818"/><stop offset="100%" stop-color="#220606"/>
-  </radialGradient></defs>
-  <rect x="40" y="65" width="40" height="50" fill="#f0e4be" stroke="#000" stroke-width="3" rx="6"/>
-  <ellipse cx="60" cy="98" rx="20" ry="6" fill="#000" opacity="0.35"/>
-  <path d="M14,68 Q14,28 60,18 Q106,28 106,68 Q60,82 14,68 Z" fill="url(#msh-c)" stroke="#000" stroke-width="3"/>
-  <circle cx="36" cy="46" r="6" fill="#f0e4be" stroke="#000" stroke-width="1.5"/>
-  <circle cx="60" cy="38" r="8" fill="#f0e4be" stroke="#000" stroke-width="1.5"/>
-  <circle cx="84" cy="48" r="5" fill="#f0e4be" stroke="#000" stroke-width="1.5"/>
-  <circle cx="48" cy="78" r="3" fill="#000"/>
-  <circle cx="72" cy="78" r="3" fill="#000"/>
-  <circle cx="49" cy="77" r="1" fill="#fff"/>
-  <circle cx="73" cy="77" r="1" fill="#fff"/>
-  <path d="M52,92 Q60,98 68,92" stroke="#000" stroke-width="2" fill="none"/>
+ART.ooze_spike = `<svg viewBox="0 0 16 14" shape-rendering="crispEdges">
+  <rect x="2" y="0" width="1" height="2" fill="#280838"/>
+  <rect x="5" y="0" width="1" height="2" fill="#280838"/>
+  <rect x="8" y="0" width="1" height="2" fill="#280838"/>
+  <rect x="11" y="0" width="1" height="2" fill="#280838"/>
+  <rect x="3" y="2" width="10" height="1" fill="#280838"/>
+  <rect x="2" y="3" width="12" height="1" fill="#280838"/>
+  <rect x="1" y="4" width="14" height="8" fill="#280838"/>
+  <rect x="2" y="12" width="12" height="1" fill="#280838"/>
+  <rect x="3" y="13" width="2" height="1" fill="#280838"/>
+  <rect x="7" y="13" width="2" height="1" fill="#280838"/>
+  <rect x="11" y="13" width="2" height="1" fill="#280838"/>
+  <rect x="2" y="4" width="12" height="8" fill="#6a3088"/>
+  <rect x="3" y="4" width="10" height="2" fill="#c890e8"/>
+  <rect x="3" y="7" width="3" height="2" fill="#fff"/>
+  <rect x="4" y="8" width="1" height="1" fill="#1a0820"/>
+  <rect x="10" y="7" width="3" height="2" fill="#fff"/>
+  <rect x="11" y="8" width="1" height="1" fill="#1a0820"/>
+  <rect x="5" y="10" width="6" height="1" fill="#1a0820"/>
 </svg>`;
 
-ART.crawler_a = `<svg viewBox="0 0 120 120">
-  <defs><radialGradient id="cra" cx="50%" cy="35%" r="65%">
-    <stop offset="0%" stop-color="#5aa9ff"/><stop offset="55%" stop-color="#1a5a98"/><stop offset="100%" stop-color="#08182a"/>
-  </radialGradient></defs>
-  <ellipse cx="60" cy="68" rx="40" ry="34" fill="url(#cra)" stroke="#000" stroke-width="3"/>
-  <ellipse cx="48" cy="50" rx="12" ry="8" fill="#fff" opacity="0.22"/>
-  <ellipse cx="48" cy="68" rx="6" ry="7" fill="#fff" stroke="#000" stroke-width="2"/>
-  <ellipse cx="72" cy="68" rx="6" ry="7" fill="#fff" stroke="#000" stroke-width="2"/>
-  <circle cx="48" cy="70" r="2.8" fill="#000"/>
-  <circle cx="72" cy="70" r="2.8" fill="#000"/>
-  <path d="M30,90 L20,102" stroke="#000" stroke-width="3"/>
-  <path d="M40,98 L34,112" stroke="#000" stroke-width="3"/>
-  <path d="M80,98 L86,112" stroke="#000" stroke-width="3"/>
-  <path d="M90,90 L100,102" stroke="#000" stroke-width="3"/>
-  <path d="M52,88 Q60,94 68,88" stroke="#000" stroke-width="2" fill="none"/>
-</svg>`;
-ART.crawler_b = ART.crawler_a.replace(/#5aa9ff/g, '#ff7050').replace(/#1a5a98/g, '#8a1820').replace(/#08182a/g, '#280808');
-
-ART.brute = `<svg viewBox="0 0 120 130">
-  <defs><linearGradient id="br" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#6a8a4a"/><stop offset="55%" stop-color="#384a20"/><stop offset="100%" stop-color="#0e1408"/>
-  </linearGradient></defs>
-  <rect x="30" y="55" width="60" height="62" fill="url(#br)" stroke="#000" stroke-width="3" rx="4"/>
-  <rect x="38" y="68" width="44" height="40" fill="#1a2410" opacity="0.5"/>
-  <ellipse cx="60" cy="35" rx="26" ry="22" fill="url(#br)" stroke="#000" stroke-width="3"/>
-  <path d="M36,28 Q28,10 24,18 Q30,22 36,30 Z" fill="#3a2410" stroke="#000" stroke-width="2"/>
-  <path d="M84,28 Q92,10 96,18 Q90,22 84,30 Z" fill="#3a2410" stroke="#000" stroke-width="2"/>
-  <ellipse cx="50" cy="38" rx="4" ry="3" fill="#fff"/>
-  <ellipse cx="70" cy="38" rx="4" ry="3" fill="#fff"/>
-  <circle cx="50" cy="39" r="2" fill="#c80808"/>
-  <circle cx="70" cy="39" r="2" fill="#c80808"/>
-  <path d="M48,48 L52,55 L56,48 L60,55 L64,48 L68,55 L72,48" fill="#f4e8c1" stroke="#000" stroke-width="1.5"/>
-  <rect x="12" y="80" width="22" height="10" fill="#5a3a20" stroke="#000" stroke-width="2"/>
-  <rect x="8" y="70" width="14" height="32" fill="#9a7a3a" stroke="#000" stroke-width="2"/>
-  <circle cx="15" cy="68" r="6" fill="#aa6a18" stroke="#000" stroke-width="2"/>
+ART.watcher = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="7" y="0" width="2" height="2" fill="#0a0e1a"/>
+  <rect x="0" y="7" width="2" height="2" fill="#0a0e1a"/>
+  <rect x="14" y="7" width="2" height="2" fill="#0a0e1a"/>
+  <rect x="7" y="14" width="2" height="2" fill="#0a0e1a"/>
+  <rect x="5" y="2" width="6" height="1" fill="#0a0e1a"/>
+  <rect x="3" y="3" width="10" height="1" fill="#0a0e1a"/>
+  <rect x="2" y="4" width="12" height="8" fill="#0a0e1a"/>
+  <rect x="3" y="12" width="10" height="1" fill="#0a0e1a"/>
+  <rect x="5" y="13" width="6" height="1" fill="#0a0e1a"/>
+  <rect x="4" y="4" width="8" height="8" fill="#3a4258"/>
+  <rect x="5" y="4" width="6" height="1" fill="#8a98b0"/>
+  <rect x="5" y="6" width="6" height="4" fill="#0a0e1a"/>
+  <rect x="6" y="6" width="4" height="4" fill="#3a8ed0"/>
+  <rect x="7" y="7" width="2" height="2" fill="#9be4ff"/>
+  <rect x="7" y="7" width="1" height="1" fill="#fff"/>
 </svg>`;
 
-ART.slumberer = `<svg viewBox="0 0 120 130">
-  <defs><radialGradient id="sl-c" cx="50%" cy="35%" r="65%">
-    <stop offset="0%" stop-color="#888"/><stop offset="55%" stop-color="#3a3a48"/><stop offset="100%" stop-color="#0a0a14"/>
-  </radialGradient></defs>
-  <ellipse cx="60" cy="78" rx="50" ry="44" fill="url(#sl-c)" stroke="#000" stroke-width="3"/>
-  <path d="M38,55 Q60,40 82,55" stroke="#000" stroke-width="3" fill="none"/>
-  <path d="M38,55 L34,48 L42,55" fill="#000"/>
-  <path d="M82,55 L86,48 L78,55" fill="#000"/>
-  <path d="M40,75 Q45,71 50,75" stroke="#000" stroke-width="2.5" fill="none"/>
-  <path d="M70,75 Q75,71 80,75" stroke="#000" stroke-width="2.5" fill="none"/>
-  <text x="60" y="100" text-anchor="middle" font-family="serif" font-size="20" fill="#000">Zzz</text>
-  <ellipse cx="44" cy="65" rx="10" ry="4" fill="#fff" opacity="0.15"/>
+ART.mushman = `<svg viewBox="0 0 16 18" shape-rendering="crispEdges">
+  <rect x="3" y="0" width="10" height="1" fill="#220606"/>
+  <rect x="1" y="1" width="14" height="1" fill="#220606"/>
+  <rect x="0" y="2" width="16" height="5" fill="#220606"/>
+  <rect x="1" y="2" width="14" height="4" fill="#6a1818"/>
+  <rect x="1" y="2" width="14" height="1" fill="#d04040"/>
+  <rect x="3" y="3" width="2" height="1" fill="#f0e4be"/>
+  <rect x="7" y="3" width="2" height="1" fill="#f0e4be"/>
+  <rect x="11" y="3" width="2" height="1" fill="#f0e4be"/>
+  <rect x="3" y="6" width="10" height="1" fill="#220606"/>
+  <rect x="4" y="7" width="8" height="9" fill="#f0e4be"/>
+  <rect x="4" y="7" width="8" height="1" fill="#1a0c00"/>
+  <rect x="4" y="16" width="8" height="2" fill="#1a0c00"/>
+  <rect x="4" y="8" width="1" height="8" fill="#1a0c00"/>
+  <rect x="11" y="8" width="1" height="8" fill="#1a0c00"/>
+  <rect x="6" y="10" width="1" height="2" fill="#000"/>
+  <rect x="9" y="10" width="1" height="2" fill="#000"/>
+  <rect x="6" y="13" width="4" height="1" fill="#000"/>
 </svg>`;
 
-ART.wing_drifter = `<svg viewBox="0 0 120 130">
-  <defs><linearGradient id="wd" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#3a2050"/><stop offset="55%" stop-color="#180828"/><stop offset="100%" stop-color="#040208"/>
-  </linearGradient></defs>
-  <path d="M10,55 Q30,40 50,60 Q40,75 18,72 Z" fill="url(#wd)" stroke="#000" stroke-width="2.5"/>
-  <path d="M110,55 Q90,40 70,60 Q80,75 102,72 Z" fill="url(#wd)" stroke="#000" stroke-width="2.5"/>
-  <path d="M20,60 L26,72 M30,55 L35,68 M40,55 L44,68" stroke="#000" stroke-width="1.5" fill="none"/>
-  <path d="M100,60 L94,72 M90,55 L85,68 M80,55 L76,68" stroke="#000" stroke-width="1.5" fill="none"/>
-  <path d="M44,40 L76,40 L82,108 L38,108 Z" fill="url(#wd)" stroke="#000" stroke-width="3"/>
-  <ellipse cx="60" cy="32" rx="16" ry="14" fill="url(#wd)" stroke="#000" stroke-width="3"/>
-  <ellipse cx="54" cy="30" rx="3" ry="2" fill="#ff3060"/>
-  <ellipse cx="66" cy="30" rx="3" ry="2" fill="#ff3060"/>
-  <path d="M52,38 L56,42 L60,38 L64,42 L68,38" fill="#f4e8c1" stroke="#000" stroke-width="1.5"/>
+ART.crawler_a = `<svg viewBox="0 0 16 14" shape-rendering="crispEdges">
+  <rect x="3" y="2" width="10" height="1" fill="#08182a"/>
+  <rect x="2" y="3" width="12" height="1" fill="#08182a"/>
+  <rect x="1" y="4" width="14" height="7" fill="#08182a"/>
+  <rect x="2" y="11" width="12" height="1" fill="#08182a"/>
+  <rect x="2" y="4" width="12" height="7" fill="#1a5a98"/>
+  <rect x="3" y="4" width="10" height="1" fill="#5aa9ff"/>
+  <rect x="3" y="6" width="3" height="2" fill="#fff"/>
+  <rect x="4" y="7" width="1" height="1" fill="#000"/>
+  <rect x="10" y="6" width="3" height="2" fill="#fff"/>
+  <rect x="11" y="7" width="1" height="1" fill="#000"/>
+  <rect x="5" y="9" width="6" height="1" fill="#000"/>
+  <rect x="0" y="12" width="2" height="2" fill="#08182a"/>
+  <rect x="4" y="12" width="2" height="2" fill="#08182a"/>
+  <rect x="10" y="12" width="2" height="2" fill="#08182a"/>
+  <rect x="14" y="12" width="2" height="2" fill="#08182a"/>
 </svg>`;
 
-ART.great_ooze = `<svg viewBox="0 0 120 130">
-  <defs><radialGradient id="go" cx="50%" cy="28%" r="75%">
-    <stop offset="0%" stop-color="#c89cd8"/><stop offset="50%" stop-color="#5a2278"/><stop offset="100%" stop-color="#1a0628"/>
-  </radialGradient></defs>
-  <path d="M10,95 Q15,128 30,123 Q42,130 50,115 Q60,131 72,115 Q82,130 90,118 Q105,128 110,95 Z" fill="url(#go)" stroke="#000" stroke-width="3"/>
-  <ellipse cx="60" cy="70" rx="55" ry="50" fill="url(#go)" stroke="#000" stroke-width="3"/>
-  <ellipse cx="40" cy="40" rx="18" ry="12" fill="#fff" opacity="0.28"/>
-  <ellipse cx="42" cy="68" rx="8" ry="10" fill="#fff" stroke="#000" stroke-width="2.5"/>
-  <ellipse cx="78" cy="68" rx="8" ry="10" fill="#fff" stroke="#000" stroke-width="2.5"/>
-  <ellipse cx="42" cy="71" rx="4" ry="5" fill="#000"/>
-  <ellipse cx="78" cy="71" rx="4" ry="5" fill="#000"/>
-  <ellipse cx="43" cy="69" rx="1.5" ry="2" fill="#fff"/>
-  <ellipse cx="79" cy="69" rx="1.5" ry="2" fill="#fff"/>
-  <path d="M42,90 Q60,105 78,90" stroke="#000" stroke-width="3" fill="none"/>
-  <path d="M48,92 L50,98 L54,92 L58,98 L62,92 L66,98 L70,92 L72,98" fill="#000"/>
+ART.crawler_b = `<svg viewBox="0 0 16 14" shape-rendering="crispEdges">
+  <rect x="3" y="2" width="10" height="1" fill="#280808"/>
+  <rect x="2" y="3" width="12" height="1" fill="#280808"/>
+  <rect x="1" y="4" width="14" height="7" fill="#280808"/>
+  <rect x="2" y="11" width="12" height="1" fill="#280808"/>
+  <rect x="2" y="4" width="12" height="7" fill="#8a1820"/>
+  <rect x="3" y="4" width="10" height="1" fill="#ff7050"/>
+  <rect x="3" y="6" width="3" height="2" fill="#fff"/>
+  <rect x="4" y="7" width="1" height="1" fill="#000"/>
+  <rect x="10" y="6" width="3" height="2" fill="#fff"/>
+  <rect x="11" y="7" width="1" height="1" fill="#000"/>
+  <rect x="5" y="9" width="6" height="1" fill="#000"/>
+  <rect x="0" y="12" width="2" height="2" fill="#280808"/>
+  <rect x="4" y="12" width="2" height="2" fill="#280808"/>
+  <rect x="10" y="12" width="2" height="2" fill="#280808"/>
+  <rect x="14" y="12" width="2" height="2" fill="#280808"/>
 </svg>`;
 
-ART.hex_eye = `<svg viewBox="0 0 120 130">
-  <defs>
-    <radialGradient id="he" cx="50%" cy="50%" r="55%">
-      <stop offset="0%" stop-color="#ffd060"/><stop offset="30%" stop-color="#d04020"/><stop offset="75%" stop-color="#4a0808"/><stop offset="100%" stop-color="#0a0204"/>
-    </radialGradient>
-  </defs>
-  <polygon points="60,12 102,38 102,86 60,116 18,86 18,38" fill="url(#he)" stroke="#000" stroke-width="3"/>
-  <polygon points="60,28 88,44 88,80 60,100 32,80 32,44" fill="#0a0204" stroke="#ff7028" stroke-width="2"/>
-  <ellipse cx="60" cy="64" rx="22" ry="14" fill="#fff" stroke="#000" stroke-width="2"/>
-  <ellipse cx="60" cy="64" rx="10" ry="14" fill="#000"/>
-  <circle cx="60" cy="64" r="6" fill="#ff4020"/>
-  <circle cx="62" cy="62" r="2" fill="#ffd060"/>
-  <path d="M30,40 L24,32 M90,40 L96,32 M30,84 L24,92 M90,84 L96,92" stroke="#ff7028" stroke-width="2.5"/>
-  <circle cx="22" cy="30" r="3" fill="#ff7028"/>
-  <circle cx="98" cy="30" r="3" fill="#ff7028"/>
-  <circle cx="22" cy="94" r="3" fill="#ff7028"/>
-  <circle cx="98" cy="94" r="3" fill="#ff7028"/>
+ART.brute = `<svg viewBox="0 0 18 22" shape-rendering="crispEdges">
+  <rect x="4" y="2" width="2" height="2" fill="#3a2410"/>
+  <rect x="12" y="2" width="2" height="2" fill="#3a2410"/>
+  <rect x="5" y="3" width="8" height="1" fill="#0e1408"/>
+  <rect x="4" y="4" width="10" height="5" fill="#0e1408"/>
+  <rect x="5" y="5" width="8" height="3" fill="#6a8a4a"/>
+  <rect x="5" y="5" width="8" height="1" fill="#9ab86a"/>
+  <rect x="6" y="6" width="2" height="1" fill="#fff"/>
+  <rect x="10" y="6" width="2" height="1" fill="#fff"/>
+  <rect x="6" y="7" width="1" height="1" fill="#c80808"/>
+  <rect x="11" y="7" width="1" height="1" fill="#c80808"/>
+  <rect x="6" y="8" width="1" height="1" fill="#f4e8c1"/>
+  <rect x="8" y="8" width="1" height="1" fill="#f4e8c1"/>
+  <rect x="10" y="8" width="1" height="1" fill="#f4e8c1"/>
+  <rect x="2" y="9" width="14" height="1" fill="#0e1408"/>
+  <rect x="2" y="10" width="14" height="9" fill="#0e1408"/>
+  <rect x="3" y="10" width="12" height="8" fill="#384a20"/>
+  <rect x="4" y="11" width="10" height="1" fill="#6a8a4a"/>
+  <rect x="6" y="13" width="6" height="3" fill="#1a2410"/>
+  <rect x="0" y="11" width="2" height="6" fill="#9a7a3a"/>
+  <rect x="0" y="10" width="3" height="2" fill="#aa6a18"/>
+  <rect x="0" y="17" width="3" height="2" fill="#5a3a20"/>
+  <rect x="4" y="19" width="4" height="3" fill="#1a0c08"/>
+  <rect x="10" y="19" width="4" height="3" fill="#1a0c08"/>
 </svg>`;
 
-ART.warden = `<svg viewBox="0 0 120 130">
-  <defs><linearGradient id="wn" x1="0" y1="0" x2="0" y2="1">
-    <stop offset="0%" stop-color="#8a8478"/><stop offset="55%" stop-color="#403a30"/><stop offset="100%" stop-color="#0e0c08"/>
-  </linearGradient></defs>
-  <rect x="20" y="38" width="80" height="80" fill="url(#wn)" stroke="#000" stroke-width="3" rx="4"/>
-  <rect x="32" y="50" width="56" height="56" fill="#1a1810" opacity="0.4"/>
-  <rect x="20" y="38" width="80" height="14" fill="#5a5040" stroke="#000" stroke-width="2"/>
-  <rect x="20" y="106" width="80" height="14" fill="#5a5040" stroke="#000" stroke-width="2"/>
-  <circle cx="60" cy="78" r="22" fill="#1a1810" stroke="#d4a73e" stroke-width="3"/>
-  <circle cx="60" cy="78" r="14" fill="#d4a73e"/>
-  <circle cx="60" cy="78" r="7" fill="#1a1810"/>
-  <circle cx="62" cy="76" r="2.5" fill="#ffd060"/>
-  <rect x="50" y="20" width="20" height="22" fill="url(#wn)" stroke="#000" stroke-width="3"/>
-  <polygon points="50,20 60,8 70,20" fill="url(#wn)" stroke="#000" stroke-width="3"/>
-  <rect x="14" y="60" width="6" height="36" fill="#3a3428" stroke="#000" stroke-width="2"/>
-  <rect x="100" y="60" width="6" height="36" fill="#3a3428" stroke="#000" stroke-width="2"/>
+ART.slumberer = `<svg viewBox="0 0 18 14" shape-rendering="crispEdges">
+  <rect x="3" y="0" width="12" height="1" fill="#0a0a14"/>
+  <rect x="1" y="1" width="16" height="1" fill="#0a0a14"/>
+  <rect x="0" y="2" width="18" height="10" fill="#0a0a14"/>
+  <rect x="1" y="12" width="16" height="1" fill="#0a0a14"/>
+  <rect x="3" y="13" width="12" height="1" fill="#0a0a14"/>
+  <rect x="1" y="2" width="16" height="10" fill="#3a3a48"/>
+  <rect x="2" y="2" width="14" height="2" fill="#888"/>
+  <rect x="3" y="5" width="4" height="1" fill="#000"/>
+  <rect x="11" y="5" width="4" height="1" fill="#000"/>
+  <rect x="4" y="4" width="2" height="1" fill="#000"/>
+  <rect x="12" y="4" width="2" height="1" fill="#000"/>
+  <rect x="5" y="8" width="3" height="1" fill="#000"/>
+  <rect x="10" y="8" width="3" height="1" fill="#000"/>
+  <rect x="13" y="6" width="1" height="1" fill="#5aa9ff"/>
+  <rect x="14" y="5" width="1" height="1" fill="#5aa9ff"/>
+  <rect x="15" y="4" width="1" height="1" fill="#5aa9ff"/>
 </svg>`;
 
+ART.wing_drifter = `<svg viewBox="0 0 22 16" shape-rendering="crispEdges">
+  <rect x="0" y="3" width="6" height="6" fill="#040208"/>
+  <rect x="1" y="4" width="4" height="4" fill="#180828"/>
+  <rect x="2" y="5" width="2" height="2" fill="#3a2050"/>
+  <rect x="16" y="3" width="6" height="6" fill="#040208"/>
+  <rect x="17" y="4" width="4" height="4" fill="#180828"/>
+  <rect x="18" y="5" width="2" height="2" fill="#3a2050"/>
+  <rect x="6" y="0" width="10" height="1" fill="#040208"/>
+  <rect x="5" y="1" width="12" height="3" fill="#040208"/>
+  <rect x="6" y="1" width="10" height="3" fill="#180828"/>
+  <rect x="8" y="2" width="2" height="1" fill="#ff3060"/>
+  <rect x="12" y="2" width="2" height="1" fill="#ff3060"/>
+  <rect x="8" y="3" width="1" height="1" fill="#fff"/>
+  <rect x="13" y="3" width="1" height="1" fill="#fff"/>
+  <rect x="5" y="4" width="12" height="1" fill="#040208"/>
+  <rect x="5" y="5" width="12" height="10" fill="#040208"/>
+  <rect x="6" y="5" width="10" height="10" fill="#180828"/>
+  <rect x="6" y="6" width="10" height="1" fill="#3a2050"/>
+  <rect x="6" y="9" width="10" height="1" fill="#3a2050"/>
+  <rect x="10" y="11" width="2" height="3" fill="#ff3060"/>
+</svg>`;
+
+ART.great_ooze = `<svg viewBox="0 0 22 20" shape-rendering="crispEdges">
+  <rect x="6" y="2" width="10" height="1" fill="#1a0628"/>
+  <rect x="3" y="3" width="16" height="1" fill="#1a0628"/>
+  <rect x="2" y="4" width="18" height="1" fill="#1a0628"/>
+  <rect x="1" y="5" width="20" height="13" fill="#1a0628"/>
+  <rect x="2" y="18" width="18" height="1" fill="#1a0628"/>
+  <rect x="2" y="19" width="2" height="1" fill="#1a0628"/>
+  <rect x="6" y="19" width="2" height="1" fill="#1a0628"/>
+  <rect x="10" y="19" width="2" height="1" fill="#1a0628"/>
+  <rect x="14" y="19" width="2" height="1" fill="#1a0628"/>
+  <rect x="18" y="19" width="2" height="1" fill="#1a0628"/>
+  <rect x="2" y="5" width="18" height="13" fill="#5a2278"/>
+  <rect x="3" y="3" width="16" height="3" fill="#c89cd8" opacity="0.55"/>
+  <rect x="3" y="6" width="16" height="1" fill="#c89cd8" opacity="0.4"/>
+  <rect x="4" y="9" width="4" height="4" fill="#fff"/>
+  <rect x="5" y="10" width="2" height="2" fill="#000"/>
+  <rect x="5" y="11" width="1" height="1" fill="#fff"/>
+  <rect x="14" y="9" width="4" height="4" fill="#fff"/>
+  <rect x="15" y="10" width="2" height="2" fill="#000"/>
+  <rect x="15" y="11" width="1" height="1" fill="#fff"/>
+  <rect x="5" y="14" width="12" height="1" fill="#000"/>
+  <rect x="6" y="15" width="1" height="2" fill="#000"/>
+  <rect x="8" y="15" width="1" height="2" fill="#000"/>
+  <rect x="10" y="15" width="1" height="2" fill="#000"/>
+  <rect x="12" y="15" width="1" height="2" fill="#000"/>
+  <rect x="14" y="15" width="1" height="2" fill="#000"/>
+</svg>`;
+
+ART.hex_eye = `<svg viewBox="0 0 20 22" shape-rendering="crispEdges">
+  <rect x="8" y="0" width="4" height="1" fill="#0a0204"/>
+  <rect x="5" y="1" width="10" height="1" fill="#0a0204"/>
+  <rect x="3" y="2" width="14" height="1" fill="#0a0204"/>
+  <rect x="2" y="3" width="16" height="16" fill="#0a0204"/>
+  <rect x="3" y="19" width="14" height="1" fill="#0a0204"/>
+  <rect x="5" y="20" width="10" height="1" fill="#0a0204"/>
+  <rect x="8" y="21" width="4" height="1" fill="#0a0204"/>
+  <rect x="3" y="3" width="14" height="16" fill="#4a0808"/>
+  <rect x="5" y="2" width="10" height="2" fill="#d04020"/>
+  <rect x="5" y="18" width="10" height="2" fill="#d04020"/>
+  <rect x="3" y="6" width="2" height="10" fill="#d04020"/>
+  <rect x="15" y="6" width="2" height="10" fill="#d04020"/>
+  <rect x="6" y="9" width="8" height="4" fill="#000"/>
+  <rect x="5" y="10" width="10" height="2" fill="#000"/>
+  <rect x="7" y="10" width="6" height="2" fill="#ffd060"/>
+  <rect x="8" y="10" width="4" height="2" fill="#ff4020"/>
+  <rect x="9" y="10" width="2" height="2" fill="#000"/>
+  <rect x="9" y="10" width="1" height="1" fill="#ffd060"/>
+  <rect x="0" y="0" width="2" height="2" fill="#ff7028"/>
+  <rect x="18" y="0" width="2" height="2" fill="#ff7028"/>
+  <rect x="0" y="20" width="2" height="2" fill="#ff7028"/>
+  <rect x="18" y="20" width="2" height="2" fill="#ff7028"/>
+</svg>`;
+
+ART.warden = `<svg viewBox="0 0 20 22" shape-rendering="crispEdges">
+  <rect x="7" y="0" width="6" height="1" fill="#000"/>
+  <rect x="6" y="1" width="8" height="3" fill="#000"/>
+  <rect x="7" y="2" width="6" height="2" fill="#5a5040"/>
+  <rect x="2" y="4" width="16" height="1" fill="#000"/>
+  <rect x="1" y="5" width="18" height="13" fill="#000"/>
+  <rect x="2" y="5" width="16" height="13" fill="#403a30"/>
+  <rect x="2" y="5" width="16" height="2" fill="#8a8478"/>
+  <rect x="2" y="16" width="16" height="2" fill="#5a5040"/>
+  <rect x="3" y="6" width="14" height="1" fill="#a89a78"/>
+  <rect x="6" y="9" width="8" height="6" fill="#000"/>
+  <rect x="7" y="10" width="6" height="4" fill="#d4a73e"/>
+  <rect x="8" y="11" width="4" height="2" fill="#000"/>
+  <rect x="9" y="11" width="2" height="2" fill="#a82828"/>
+  <rect x="9" y="11" width="1" height="1" fill="#ffd060"/>
+  <rect x="2" y="18" width="16" height="1" fill="#000"/>
+  <rect x="3" y="19" width="3" height="3" fill="#3a3428"/>
+  <rect x="14" y="19" width="3" height="3" fill="#3a3428"/>
+  <rect x="3" y="19" width="3" height="1" fill="#5a5040"/>
+  <rect x="14" y="19" width="3" height="1" fill="#5a5040"/>
+</svg>`;
+
+// Legacy path-based template kept for unused entries (no-op)
 // MAP node icons (smaller SVGs)
 ART.icon_combat = `<svg viewBox="0 0 40 40"><path d="M8,28 L24,12 L28,16 L12,32 Z" fill="#e0e0c8" stroke="#000" stroke-width="2"/><circle cx="12" cy="32" r="3" fill="#5a3020"/><path d="M22,8 L32,18 L28,22 L18,12 Z" fill="#e0e0c8" stroke="#000" stroke-width="2"/></svg>`;
 ART.icon_elite  = `<svg viewBox="0 0 40 40"><path d="M20,8 L24,18 L34,18 L26,24 L30,34 L20,28 L10,34 L14,24 L6,18 L16,18 Z" fill="#d4a73e" stroke="#000" stroke-width="2"/></svg>`;
@@ -1454,6 +1673,91 @@ function makeBoss() { return [makeEnemy(pickRand(['great_ooze','hex_eye','warden
 // ============================================================
 // COMBAT
 // ============================================================
+function buildScene() {
+  // Pixel dungeon backdrop: brick floor, stone wall, distant arch, wall sconces, banners.
+  return `<svg class="scene" viewBox="0 0 200 120" preserveAspectRatio="xMidYEnd slice">
+    <!-- back wall stone -->
+    <rect x="0" y="0" width="200" height="90" fill="#2a1a2a"/>
+    <rect x="0" y="0" width="200" height="90" fill="url(#brickW)"/>
+    <defs>
+      <pattern id="brickW" x="0" y="0" width="16" height="8" patternUnits="userSpaceOnUse">
+        <rect width="16" height="8" fill="#2a1a2a"/>
+        <rect x="0" y="0" width="15" height="3" fill="#3a2638"/>
+        <rect x="0" y="4" width="7"  height="3" fill="#3a2638"/>
+        <rect x="8" y="4" width="7"  height="3" fill="#3a2638"/>
+      </pattern>
+      <pattern id="brickF" x="0" y="0" width="16" height="6" patternUnits="userSpaceOnUse">
+        <rect width="16" height="6" fill="#1a0e18"/>
+        <rect x="0" y="0" width="15" height="2" fill="#3a2438"/>
+        <rect x="0" y="3" width="7"  height="2" fill="#3a2438"/>
+        <rect x="8" y="3" width="7"  height="2" fill="#3a2438"/>
+      </pattern>
+    </defs>
+    <!-- distant arched doorway -->
+    <path d="M86,40 L86,72 L114,72 L114,40 Q100,28 86,40 Z" fill="#08040a"/>
+    <path d="M88,42 L88,72 L112,72 L112,42 Q100,32 88,42 Z" fill="#1a0a18"/>
+    <!-- mist inside arch -->
+    <ellipse cx="100" cy="65" rx="14" ry="6" fill="#3a2050" opacity="0.55"/>
+    <!-- hanging chain banners -->
+    <rect x="98" y="30" width="4" height="6" fill="#2a1a1a"/>
+    <path d="M92,36 L108,36 L106,52 L100,56 L94,52 Z" fill="#7a1828" stroke="#000" stroke-width="0.6"/>
+    <rect x="98" y="40" width="4" height="3" fill="#d4a73e"/>
+    <!-- left sconce -->
+    <g transform="translate(28,38)">
+      <rect x="0" y="6" width="4" height="14" fill="#1a0a08"/>
+      <rect x="-3" y="0" width="10" height="8" fill="#3a2410"/>
+      <rect x="-2" y="1" width="8" height="6" fill="#5a3a18"/>
+      <g class="torch-flame" transform="translate(2,0)">
+        <path d="M0,-4 Q-3,-8 0,-12 Q3,-8 0,-4 Z" fill="#ff8030"/>
+        <path d="M-1,-4 Q-2,-7 0,-10 Q2,-7 1,-4 Z" fill="#ffd060"/>
+        <path d="M0,-4 Q-1,-6 0,-8 Q1,-6 0,-4 Z" fill="#fff7c0"/>
+      </g>
+      <circle class="torch-glow" cx="2" cy="-6" r="14" fill="#ff8030" opacity="0.55"/>
+    </g>
+    <!-- right sconce -->
+    <g transform="translate(168,38)">
+      <rect x="0" y="6" width="4" height="14" fill="#1a0a08"/>
+      <rect x="-3" y="0" width="10" height="8" fill="#3a2410"/>
+      <rect x="-2" y="1" width="8" height="6" fill="#5a3a18"/>
+      <g class="torch-flame" transform="translate(2,0)">
+        <path d="M0,-4 Q-3,-8 0,-12 Q3,-8 0,-4 Z" fill="#ff8030"/>
+        <path d="M-1,-4 Q-2,-7 0,-10 Q2,-7 1,-4 Z" fill="#ffd060"/>
+        <path d="M0,-4 Q-1,-6 0,-8 Q1,-6 0,-4 Z" fill="#fff7c0"/>
+      </g>
+      <circle class="torch-glow" cx="2" cy="-6" r="14" fill="#ff8030" opacity="0.55"/>
+    </g>
+    <!-- cobwebs corners -->
+    <path d="M0,0 L18,0 L0,18 Z" fill="#6a5a78" opacity="0.18"/>
+    <path d="M0,0 L8,8 M0,4 L6,8 M4,0 L8,6" stroke="#a89ab0" stroke-width="0.35" opacity="0.5" fill="none"/>
+    <path d="M200,0 L182,0 L200,18 Z" fill="#6a5a78" opacity="0.18"/>
+    <path d="M200,0 L192,8 M200,4 L194,8 M196,0 L192,6" stroke="#a89ab0" stroke-width="0.35" opacity="0.5" fill="none"/>
+    <!-- floor with brick tiles -->
+    <rect x="0" y="90"  width="200" height="2" fill="#0a0204"/>
+    <rect x="0" y="92"  width="200" height="28" fill="url(#brickF)"/>
+    <!-- raised stone platform (player + enemies stand on) -->
+    <rect x="6" y="86"  width="188" height="6"  fill="#0a0204"/>
+    <rect x="8" y="84"  width="184" height="2"  fill="#5a4858"/>
+    <rect x="8" y="87"  width="184" height="3"  fill="#3a2838"/>
+    <!-- gold trim line -->
+    <rect x="8" y="84"  width="184" height="1"  fill="#d4a73e"/>
+  </svg>`;
+}
+
+function spawnEmbers() {
+  const bg = document.getElementById('sceneBg');
+  if (!bg) return;
+  for (const side of ['left','right']) {
+    if (Math.random() < 0.6) continue;
+    const em = document.createElement('div');
+    em.className = 'ember';
+    em.style.cssText = `position:absolute; width:3px; height:3px; background:#ffaa30; box-shadow:0 0 6px #ff8030; border-radius:1px; pointer-events:none;
+      ${side==='left' ? 'left:14%' : 'right:14%'}; top:42%; --ex:${(Math.random()-0.5)*16}px; animation-duration:${1.6 + Math.random()*1.2}s`;
+    bg.appendChild(em);
+    setTimeout(() => em.remove(), 3200);
+  }
+}
+let _emberInt = null;
+
 function beginCombat(enemies) {
   P.screen = 'combat';
   P.enemies = enemies;
@@ -1467,6 +1771,11 @@ function beginCombat(enemies) {
   for (const e of P.enemies) e.intent = e.ai(e, 0);
   document.getElementById('mapScreen').classList.add('hidden');
   document.getElementById('combatScreen').classList.remove('hidden');
+  // Pixel dungeon scene
+  const bg = document.getElementById('sceneBg');
+  if (bg && !bg.querySelector('.scene')) bg.innerHTML = buildScene();
+  if (_emberInt) clearInterval(_emberInt);
+  _emberInt = setInterval(spawnEmbers, 700);
   drawCards(5);
   renderAll();
 }
@@ -1847,7 +2156,7 @@ function renderBattle() {
   const player = document.createElement('div');
   player.className = 'player';
   player.id = 'playerSeat';
-  player.innerHTML = `<div class="sprite idleBob">${ART.player}</div><div class="nm">KNIGHT</div><div class="statusRow" id="playerStatuses"></div>`;
+  player.innerHTML = `<div class="sprite idleBreath">${ART.player}</div><div class="nm">KNIGHT</div><div class="statusRow" id="playerStatuses"></div>`;
   b.appendChild(player);
   const ps = player.querySelector('#playerStatuses');
   if (P.block > 0) ps.appendChild(badge('block', '🛡 ' + P.block));
@@ -1879,7 +2188,7 @@ function renderBattle() {
       const sp = document.createElement('div'); sp.style.height = '26px';
       wrap.appendChild(sp);
     }
-    const sp = document.createElement('div'); sp.className = 'sprite idleBob';
+    const sp = document.createElement('div'); sp.className = 'sprite ' + idleClassFor(e.id);
     sp.innerHTML = ART[e.art] || '';
     wrap.appendChild(sp);
     const nm = document.createElement('div'); nm.className = 'nm';
@@ -1896,6 +2205,17 @@ function renderBattle() {
     wrap.appendChild(st);
     b.appendChild(wrap);
   }
+}
+function idleClassFor(id) {
+  const m = {
+    gnashmaw:'idleWiggle', hooded_one:'idleFloat',
+    ooze_acid:'idleSquish', ooze_spike:'idleSquish', great_ooze:'idleSquish',
+    watcher_orb:'idlePulse', hex_eye:'idlePulse',
+    mushman:'idleBob', crawler_a:'idleBob', crawler_b:'idleBob',
+    brute:'idleBreath', slumberer:'idleBreath', warden:'idleBreath',
+    wing_drifter:'idleSway',
+  };
+  return m[id] || 'idleBob';
 }
 function badge(cls, txt) { const b = document.createElement('span'); b.className = 'statBadge ' + cls; b.textContent = txt; return b; }
 function enemyEl(e) { const i = P.enemies.indexOf(e); return document.querySelectorAll('.enemy')[i] || null; }
