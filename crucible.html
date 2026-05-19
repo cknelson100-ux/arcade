@@ -871,8 +871,12 @@ const net = {
     }
   },
   sendAction(action) {
-    if (G.mode === 'hosting' || G.mode === 'hotseat') {
-      game.applyAction(this.myPid || 'host', action);
+    if (G.mode === 'hosting') {
+      game.applyAction(this.myPid, action);
+    } else if (G.mode === 'hotseat') {
+      // hotseat: the actor is always whoever's turn it currently is on this device
+      const actor = G.players[G.current] ? G.players[G.current].pid : null;
+      if (actor) game.applyAction(actor, action);
     } else if (this.hostConn) {
       try { this.hostConn.send({ type: 'action', action }); } catch (e) {}
     }
@@ -968,6 +972,8 @@ const game = {
     G.current = (G.current + step * G.direction + n*2) % n;
     G.drewThisTurn = false;
     G.passDrawn = null;
+    // Hotseat: hide hand until the next player taps "I'M READY"
+    if (G.mode === 'hotseat') G.hotseatRevealed = false;
   },
 
   // ---- view per player ----
@@ -1246,12 +1252,12 @@ const game = {
       }
       h.appendChild(cardEl);
     }
-    // if passDrawn is set and not playable shouldn't happen (host would have advanced)
-    // show "PASS" if no playable cards and drew already
-    if (isMyTurn && G.drewThisTurn && !G.passDrawn) {
+    // After drawing, always offer END TURN so player isn't forced to play
+    // (covers both "drew an unplayable card" and "drew a playable card but want to hold it")
+    if (isMyTurn && G.drewThisTurn) {
       const pass = document.createElement('div');
-      pass.style.cssText = 'position:absolute; right: 14px; bottom: 30px; z-index: 20;';
-      pass.innerHTML = `<button class="btn ghost small" onclick="game.passTurn()">END TURN</button>`;
+      pass.style.cssText = 'position:absolute; right: 12px; bottom: calc(30px + env(safe-area-inset-bottom)); z-index: 20;';
+      pass.innerHTML = `<button class="btn ghost" onclick="game.passTurn()" style="padding:12px 18px;font-size:14px;">END TURN</button>`;
       document.getElementById('handArea').appendChild(pass);
     }
   },
