@@ -1,0 +1,16 @@
+{
+  "name": "Arcade",
+  "short_name": "Arcade",
+  "description": "Slay the spire and play euchre. Couch arcade for the browser.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#060108",
+  "theme_color": "#0a060e",
+  "icons": [
+    { "src": "icon.svg",     "sizes": "any",     "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-192.svg", "sizes": "192x192", "type": "image/svg+xml" },
+    { "src": "icon-512.svg", "sizes": "512x512", "type": "image/svg+xml" }
+  ]
+}
