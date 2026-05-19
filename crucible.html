@@ -1179,6 +1179,8 @@ const game = {
       document.getElementById('passToName').textContent = `PASS TO ${G.players[G.current].name}`;
       return;
     }
+    // make sure the game screen is visible (we may be coming back from passScreen)
+    ui.show('gameScreen');
 
     // render top info: others (smaller chips), with direction arrow
     const top = document.getElementById('topInfo');
