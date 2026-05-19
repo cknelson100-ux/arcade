@@ -73,27 +73,74 @@ html, body {
 /* ========== TOP HUD ========== */
 #topHud {
   position: absolute; top: 0; left: 0; right: 0;
-  height: 54px;
+  height: 64px;
   background:
-    linear-gradient(180deg, rgba(20,8,18,0.96) 0%, rgba(10,4,12,0.86) 100%);
-  border-bottom: 3px solid #000;
-  display: flex; align-items: center; gap: 22px;
+    linear-gradient(180deg, #2a1418 0%, #160a10 70%, #0a0408 100%);
+  border-bottom: 4px solid #d4a73e;
+  box-shadow: 0 4px 0 #000, 0 6px 0 rgba(0,0,0,0.6);
+  display: flex; align-items: center; gap: 18px;
   padding: 0 18px;
   z-index: 50;
   font-family: 'Cinzel', serif;
   font-size: 14px;
   letter-spacing: 1px;
 }
+#topHud::before, #topHud::after {
+  /* gilded inset rivet pattern at edges of bar */
+  content: '';
+  position: absolute;
+  top: 8px; bottom: 12px;
+  width: 6px;
+  background:
+    radial-gradient(circle at 50% 14%, #ffd96a 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 50%, #ffd96a 0 2px, transparent 3px),
+    radial-gradient(circle at 50% 86%, #ffd96a 0 2px, transparent 3px),
+    #2a1810;
+  border-left: 2px solid #000;
+  border-right: 2px solid #000;
+  box-shadow: inset 0 0 0 1px #5a3a18;
+}
+#topHud::before { left: 0; }
+#topHud::after  { right: 0; }
 #topHud .stat { display: flex; align-items: center; gap: 6px; }
-#topHud .stat .val { color: var(--gold); font-size: 19px; text-shadow: 2px 2px 0 var(--ink); font-weight: 700; }
+#topHud .stat .val {
+  color: var(--goldL); font-size: 22px;
+  text-shadow: 2px 2px 0 #000, 0 0 8px rgba(212,167,62,0.4);
+  font-weight: 800;
+}
 .hpBar {
-  position: relative; width: 220px; height: 22px;
-  background: #1a0808; border: 2px solid #000; border-radius: 3px;
-  box-shadow: inset 0 0 0 1px #4a0a0a, 0 0 0 2px #2a0e0e;
+  position: relative;
+  width: 240px; height: 26px;
+  background: #0a0204;
+  border: 3px solid #000;
+  border-radius: 3px;
+  box-shadow:
+    inset 0 0 0 1px #5a0a0a,
+    inset 0 -2px 4px rgba(0,0,0,0.6),
+    0 0 0 1px #6a4a18;
+}
+.hpBar::before {
+  /* gilded end caps */
+  content: '';
+  position: absolute;
+  top: -3px; bottom: -3px; left: -6px;
+  width: 6px;
+  background: linear-gradient(180deg, #ffd96a 0%, #8a6020 100%);
+  border: 1px solid #000;
+}
+.hpBar::after {
+  content: '';
+  position: absolute;
+  top: -3px; bottom: -3px; right: -6px;
+  width: 6px;
+  background: linear-gradient(180deg, #ffd96a 0%, #8a6020 100%);
+  border: 1px solid #000;
 }
 .hpBar .fill {
   position: absolute; inset: 0;
-  background: linear-gradient(180deg, #ff7a7a 0%, #b03030 60%, #6a1818 100%);
+  background:
+    linear-gradient(180deg, #ff8a8a 0%, #d04040 35%, #8a2020 70%, #4a0810 100%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -2px 0 rgba(0,0,0,0.5);
   transition: width 0.5s cubic-bezier(.3,1,.3,1);
 }
 .hpBar .text {
@@ -389,41 +436,83 @@ html, body {
 }
 #hand { position: absolute; inset: 0; pointer-events: none; }
 
-/* Energy orb (jewel style) */
+/* Energy orb — gold-cradled crystal */
 #energyOrb {
   position: absolute;
   bottom: 24px; left: 24px;
-  width: 108px; height: 108px;
+  width: 112px; height: 112px;
   border-radius: 50%;
+  /* concentric gold cradle around inner crystal */
   background:
-    radial-gradient(circle at 32% 28%, #b8f4ff 0%, #4cc8ff 28%, #1485c8 60%, #0c3a6a 100%);
-  border: 5px solid #000;
+    radial-gradient(circle at 50% 50%,
+      transparent 0 34%,
+      #d4a73e   34% 38%,
+      #6a4818   38% 41%,
+      #d4a73e   41% 45%,
+      #2a1810   45% 50%);
+  border: 4px solid #000;
   box-shadow:
-    0 7px 0 #000,
-    0 0 36px rgba(76,200,255,0.55),
-    inset 0 4px 0 rgba(255,255,255,0.35),
-    inset 0 -10px 18px rgba(0,0,0,0.5);
+    0 8px 0 #000,
+    0 0 38px rgba(76,200,255,0.55),
+    inset 0 0 0 2px #d4a73e,
+    inset 0 -10px 18px rgba(0,0,0,0.55);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   z-index: 60; pointer-events: auto;
   font-family: 'Cinzel', serif;
+  overflow: visible;
 }
+/* the crystal itself, faceted */
 #energyOrb::before {
-  content: ''; position: absolute;
-  top: 14px; left: 22px; width: 30px; height: 16px;
-  background: radial-gradient(ellipse at center, rgba(255,255,255,0.7), transparent);
+  content: '';
+  position: absolute;
+  inset: 22%;
+  border-radius: 50%;
+  background:
+    /* upper-left specular highlight */
+    radial-gradient(circle at 32% 26%, rgba(255,255,255,0.85) 0 8%, transparent 22%),
+    /* faceted gradient */
+    conic-gradient(from 200deg at 50% 50%,
+      #5be0ff 0deg, #2a9ad8 60deg, #0c4878 130deg,
+      #2a9ad8 220deg, #5be0ff 300deg, #5be0ff 360deg);
+  box-shadow:
+    inset 0 0 0 1px #000,
+    inset 0 -10px 16px rgba(8,32,72,0.7),
+    0 0 14px rgba(91,224,255,0.6);
+}
+/* gold studs at 4 cardinal points on the cradle */
+#energyOrb::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(circle at 50% 4%,  #ffd96a 0 4%, transparent 5%),
+    radial-gradient(circle at 50% 96%, #ffd96a 0 4%, transparent 5%),
+    radial-gradient(circle at 4%  50%, #ffd96a 0 4%, transparent 5%),
+    radial-gradient(circle at 96% 50%, #ffd96a 0 4%, transparent 5%);
+  pointer-events: none;
   border-radius: 50%;
 }
-#energyOrb .num { font-size: 42px; color: #fff; text-shadow: 3px 3px 0 #000, 0 0 12px #5be0ff; line-height: 1; font-weight: 800; }
-#energyOrb .max { font-size: 12px; color: rgba(255,255,255,0.9); text-shadow: 2px 2px 0 #000; margin-top: 2px; letter-spacing: 1px; }
+#energyOrb .num {
+  position: relative; z-index: 2;
+  font-size: 44px; color: #fff;
+  text-shadow: 3px 3px 0 #000, 0 0 14px #7cf0ff;
+  line-height: 1; font-weight: 800;
+}
+#energyOrb .max {
+  position: relative; z-index: 2;
+  font-size: 12px; color: rgba(255,255,255,0.92);
+  text-shadow: 2px 2px 0 #000;
+  margin-top: 2px; letter-spacing: 1px;
+}
 #energyOrb.flash { animation: orbPulse 0.4s; }
-@keyframes orbPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+@keyframes orbPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.14); filter: drop-shadow(0 0 20px #5be0ff); } }
 
-/* End turn button */
+/* End turn — scroll-banner shape */
 #endTurnBtn {
   position: absolute;
   bottom: 32px; right: 26px;
   background:
-    radial-gradient(ellipse at 50% 0%, #f06060 0%, #c63030 35%, #6a1818 100%);
+    /* ornate end-cap "scroll curls" feel via clip + multi-stop bg */
+    linear-gradient(180deg, #f06060 0%, #c63030 35%, #6a1818 100%);
   color: #fff;
   border: 4px solid #000; border-radius: 10px;
   padding: 16px 28px;
