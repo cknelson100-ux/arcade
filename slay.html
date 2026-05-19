@@ -589,18 +589,18 @@ html, body {
 .card .cardDesc .grn  { color: var(--greenL); font-weight: 700; }
 .card .cardDesc .pur  { color: var(--purpleL); font-weight: 700; }
 
-/* corner ornaments */
-.card .cardInner::before,
-.card .cardInner::after {
-  content: '';
+/* pixel-art ornate frame overlay (over card content) */
+.cardFrame {
   position: absolute;
-  width: 14px; height: 14px;
-  border: 2px solid var(--gold);
-  opacity: 0.5;
+  inset: 0;
   pointer-events: none;
+  z-index: 4;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 44' shape-rendering='crispEdges' preserveAspectRatio='none'><rect x='0' y='0' width='32' height='1' fill='%23d4a73e'/><rect x='0' y='43' width='32' height='1' fill='%23d4a73e'/><rect x='0' y='0' width='1' height='44' fill='%23d4a73e'/><rect x='31' y='0' width='1' height='44' fill='%23d4a73e'/><rect x='1' y='1' width='4' height='1' fill='%23d4a73e'/><rect x='1' y='1' width='1' height='4' fill='%23d4a73e'/><rect x='2' y='2' width='2' height='1' fill='%238a6020'/><rect x='2' y='2' width='1' height='2' fill='%238a6020'/><rect x='27' y='1' width='4' height='1' fill='%23d4a73e'/><rect x='30' y='1' width='1' height='4' fill='%23d4a73e'/><rect x='28' y='2' width='2' height='1' fill='%238a6020'/><rect x='29' y='2' width='1' height='2' fill='%238a6020'/><rect x='1' y='42' width='4' height='1' fill='%23d4a73e'/><rect x='1' y='39' width='1' height='4' fill='%23d4a73e'/><rect x='2' y='41' width='2' height='1' fill='%238a6020'/><rect x='2' y='40' width='1' height='2' fill='%238a6020'/><rect x='27' y='42' width='4' height='1' fill='%23d4a73e'/><rect x='30' y='39' width='1' height='4' fill='%23d4a73e'/><rect x='28' y='41' width='2' height='1' fill='%238a6020'/><rect x='29' y='40' width='1' height='2' fill='%238a6020'/><rect x='15' y='0' width='2' height='2' fill='%23a82828'/><rect x='15' y='42' width='2' height='2' fill='%23a82828'/><rect x='0' y='21' width='2' height='2' fill='%23a82828'/><rect x='30' y='21' width='2' height='2' fill='%23a82828'/><rect x='15' y='0' width='1' height='1' fill='%23ff8080'/><rect x='15' y='42' width='1' height='1' fill='%23ff8080'/><rect x='0' y='21' width='1' height='1' fill='%23ff8080'/><rect x='30' y='21' width='1' height='1' fill='%23ff8080'/></svg>");
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
 }
-.card .cardInner::before { top: 28px; left: 4px;  border-right: none; border-bottom: none; }
-.card .cardInner::after  { bottom: 4px; right: 4px; border-left:  none; border-top:    none; }
 
 .card.playable:hover {
   transform: translate(var(--tx), calc(var(--ty) - 84px)) rotate(0deg) scale(1.22);
@@ -734,31 +734,30 @@ html, body { touch-action: manipulation; -webkit-tap-highlight-color: transparen
   .mapNode.k-boss { width: 70px; height: 70px; }
   .mapNode.k-boss svg { width: 48px; height: 48px; }
 
-  /* COMBAT screen */
+  /* COMBAT screen — keep HORIZONTAL left-to-right combat on mobile */
   #combatScreen { inset: calc(46px + env(safe-area-inset-top)) 0 0 0; }
   #battle {
-    padding: 8px 8px 12px 8px;
-    gap: 14px;
-    flex-direction: column-reverse;
+    padding: 8px 8px 12px 96px;          /* leave space at left for the player */
+    gap: 10px;
+    flex-direction: row;                  /* enemies in a row, not stacked */
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
   }
-  /* Player floats top-left in landscape, but we move to bottom-left in portrait;
-     simplest: move out of the absolute position and into flow on phone */
   .player {
-    position: relative;
-    left: auto; bottom: auto;
-    margin-top: 4px;
+    position: absolute;                   /* anchor bottom-left */
+    left: 10px;
+    bottom: 14px;
+    margin: 0;
   }
-  .player .sprite { width: 84px; height: 100px; }
-  .enemy .sprite { width: 92px; height: 92px; }
-  .enemy.elite .sprite { width: 110px; height: 110px; }
-  .enemy.boss  .sprite { width: 140px; height: 140px; }
-  .enemyHp { width: 110px; height: 14px; }
+  .player .sprite { width: 66px; height: 82px; }
+  .enemy .sprite { width: 70px; height: 70px; }
+  .enemy.elite .sprite { width: 88px; height: 88px; }
+  .enemy.boss  .sprite { width: 116px; height: 116px; }
+  .enemyHp { width: 78px; height: 13px; }
   .enemyHp .txt { font-size: 10px; line-height: 10px; }
-  .enemy .intent { font-size: 11px; padding: 3px 7px; }
-  .player .nm, .enemy .nm { font-size: 11px; }
-  .statBadge { font-size: 10px; padding: 1px 4px; }
+  .enemy .intent { font-size: 10px; padding: 2px 6px; }
+  .player .nm, .enemy .nm { font-size: 10px; }
+  .statBadge { font-size: 9px; padding: 1px 3px; }
 
   /* HAND */
   #handArea {
@@ -1369,12 +1368,99 @@ ART.warden = `<svg viewBox="0 0 20 22" shape-rendering="crispEdges">
 </svg>`;
 
 // Legacy path-based template kept for unused entries (no-op)
-// MAP node icons (smaller SVGs)
-ART.icon_combat = `<svg viewBox="0 0 40 40"><path d="M8,28 L24,12 L28,16 L12,32 Z" fill="#e0e0c8" stroke="#000" stroke-width="2"/><circle cx="12" cy="32" r="3" fill="#5a3020"/><path d="M22,8 L32,18 L28,22 L18,12 Z" fill="#e0e0c8" stroke="#000" stroke-width="2"/></svg>`;
-ART.icon_elite  = `<svg viewBox="0 0 40 40"><path d="M20,8 L24,18 L34,18 L26,24 L30,34 L20,28 L10,34 L14,24 L6,18 L16,18 Z" fill="#d4a73e" stroke="#000" stroke-width="2"/></svg>`;
-ART.icon_rest   = `<svg viewBox="0 0 40 40"><path d="M14,32 Q20,18 26,32 Z" fill="#5a3020" stroke="#000" stroke-width="2"/><path d="M20,30 Q12,16 20,8 Q28,16 20,30 Z" fill="#ff8020" stroke="#000" stroke-width="2"/><path d="M20,26 Q15,18 20,12 Q25,18 20,26" fill="#ffd060"/></svg>`;
-ART.icon_treasure = `<svg viewBox="0 0 40 40"><rect x="6" y="14" width="28" height="20" fill="#d4a73e" stroke="#000" stroke-width="2" rx="2"/><path d="M6,18 Q20,8 34,18 L34,22 L6,22 Z" fill="#a87020" stroke="#000" stroke-width="2"/><rect x="18" y="20" width="4" height="8" fill="#000"/></svg>`;
-ART.icon_boss   = `<svg viewBox="0 0 40 40"><path d="M20,4 L26,12 L34,12 L36,18 L30,22 L34,32 L26,30 L20,36 L14,30 L6,32 L10,22 L4,18 L6,12 L14,12 Z" fill="#d4a73e" stroke="#000" stroke-width="2"/><circle cx="20" cy="20" r="4" fill="#a82828"/></svg>`;
+// MAP node icons (pixel-art)
+ART.icon_combat = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="11" y="1" width="2" height="2" fill="#1a1408"/>
+  <rect x="12" y="2" width="2" height="2" fill="#5a3020"/>
+  <rect x="2" y="3" width="2" height="2" fill="#1a1408"/>
+  <rect x="3" y="4" width="2" height="2" fill="#5a3020"/>
+  <rect x="3" y="3" width="9" height="2" fill="#a89878"/>
+  <rect x="4" y="4" width="9" height="2" fill="#a89878"/>
+  <rect x="5" y="5" width="9" height="2" fill="#d8d0b8"/>
+  <rect x="6" y="6" width="9" height="2" fill="#d8d0b8"/>
+  <rect x="1" y="10" width="9" height="2" fill="#a89878"/>
+  <rect x="2" y="11" width="9" height="2" fill="#a89878"/>
+  <rect x="3" y="12" width="9" height="2" fill="#d8d0b8"/>
+  <rect x="4" y="13" width="9" height="2" fill="#d8d0b8"/>
+  <rect x="0" y="13" width="2" height="2" fill="#1a1408"/>
+  <rect x="1" y="14" width="2" height="2" fill="#5a3020"/>
+  <rect x="13" y="11" width="2" height="2" fill="#1a1408"/>
+  <rect x="14" y="12" width="2" height="2" fill="#5a3020"/>
+  <rect x="6" y="6" width="4" height="4" fill="#d4a73e"/>
+  <rect x="7" y="7" width="2" height="2" fill="#ffd060"/>
+</svg>`;
+ART.icon_elite = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="4" y="2" width="8" height="1" fill="#000"/>
+  <rect x="3" y="3" width="10" height="1" fill="#000"/>
+  <rect x="2" y="4" width="12" height="8" fill="#000"/>
+  <rect x="3" y="4" width="10" height="7" fill="#f0e4be"/>
+  <rect x="3" y="4" width="10" height="1" fill="#fff8e0"/>
+  <rect x="4" y="6" width="2" height="3" fill="#000"/>
+  <rect x="10" y="6" width="2" height="3" fill="#000"/>
+  <rect x="4" y="7" width="1" height="1" fill="#ff3030"/>
+  <rect x="10" y="7" width="1" height="1" fill="#ff3030"/>
+  <rect x="6" y="9" width="1" height="2" fill="#000"/>
+  <rect x="8" y="9" width="1" height="2" fill="#000"/>
+  <rect x="5" y="11" width="1" height="2" fill="#f0e4be"/>
+  <rect x="7" y="11" width="1" height="2" fill="#f0e4be"/>
+  <rect x="9" y="11" width="1" height="2" fill="#f0e4be"/>
+  <rect x="6" y="12" width="1" height="1" fill="#000"/>
+  <rect x="8" y="12" width="1" height="1" fill="#000"/>
+</svg>`;
+ART.icon_rest = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="1" y="12" width="14" height="1" fill="#000"/>
+  <rect x="1" y="13" width="14" height="2" fill="#3a2410"/>
+  <rect x="3" y="11" width="2" height="2" fill="#5a3020"/>
+  <rect x="11" y="11" width="2" height="2" fill="#5a3020"/>
+  <rect x="2" y="12" width="3" height="1" fill="#8a5028"/>
+  <rect x="11" y="12" width="3" height="1" fill="#8a5028"/>
+  <rect x="6" y="11" width="4" height="2" fill="#8a5028"/>
+  <rect x="7" y="3" width="2" height="3" fill="#ff4020"/>
+  <rect x="6" y="5" width="4" height="4" fill="#ff8020"/>
+  <rect x="5" y="7" width="6" height="3" fill="#ff8020"/>
+  <rect x="7" y="6" width="2" height="3" fill="#ffd060"/>
+  <rect x="6" y="8" width="4" height="2" fill="#ffd060"/>
+  <rect x="7" y="8" width="2" height="1" fill="#fff7c0"/>
+</svg>`;
+ART.icon_treasure = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="2" y="3" width="12" height="1" fill="#000"/>
+  <rect x="1" y="4" width="14" height="1" fill="#000"/>
+  <rect x="1" y="5" width="14" height="3" fill="#a87020"/>
+  <rect x="2" y="5" width="12" height="1" fill="#d4a73e"/>
+  <rect x="1" y="8" width="1" height="6" fill="#000"/>
+  <rect x="14" y="8" width="1" height="6" fill="#000"/>
+  <rect x="2" y="8" width="12" height="6" fill="#a87020"/>
+  <rect x="2" y="8" width="12" height="1" fill="#d4a73e"/>
+  <rect x="2" y="13" width="12" height="1" fill="#5a3010"/>
+  <rect x="1" y="14" width="14" height="1" fill="#000"/>
+  <rect x="3" y="5" width="2" height="3" fill="#5a3010"/>
+  <rect x="11" y="5" width="2" height="3" fill="#5a3010"/>
+  <rect x="6" y="9" width="4" height="3" fill="#3a2010"/>
+  <rect x="7" y="10" width="2" height="2" fill="#ffd060"/>
+  <rect x="7" y="10" width="1" height="1" fill="#fff7c0"/>
+</svg>`;
+ART.icon_boss = `<svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+  <rect x="3" y="1" width="2" height="3" fill="#a82828"/>
+  <rect x="7" y="0" width="2" height="4" fill="#a82828"/>
+  <rect x="11" y="1" width="2" height="3" fill="#a82828"/>
+  <rect x="3" y="0" width="1" height="1" fill="#ffd060"/>
+  <rect x="7" y="-1" width="1" height="1" fill="#ffd060"/>
+  <rect x="11" y="0" width="1" height="1" fill="#ffd060"/>
+  <rect x="2" y="4" width="12" height="1" fill="#000"/>
+  <rect x="2" y="5" width="12" height="2" fill="#d4a73e"/>
+  <rect x="2" y="5" width="12" height="1" fill="#ffd060"/>
+  <rect x="3" y="7" width="10" height="1" fill="#000"/>
+  <rect x="3" y="8" width="10" height="5" fill="#3a1008"/>
+  <rect x="4" y="9" width="3" height="2" fill="#000"/>
+  <rect x="9" y="9" width="3" height="2" fill="#000"/>
+  <rect x="4" y="10" width="1" height="1" fill="#ff2020"/>
+  <rect x="9" y="10" width="1" height="1" fill="#ff2020"/>
+  <rect x="6" y="11" width="4" height="2" fill="#000"/>
+  <rect x="7" y="11" width="1" height="2" fill="#a82828"/>
+  <rect x="8" y="11" width="1" height="2" fill="#a82828"/>
+  <rect x="4" y="13" width="8" height="1" fill="#000"/>
+  <rect x="5" y="14" width="6" height="1" fill="#3a1008"/>
+</svg>`;
 
 // ===== CARD ART (compact SVGs) =====
 ART.c_strike = `<svg viewBox="0 0 100 60"><defs><linearGradient id="cs" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#e0e0c8"/><stop offset="100%" stop-color="#8a8470"/></linearGradient></defs><path d="M14,46 L72,8 L82,18 L24,56 Z" fill="url(#cs)" stroke="#000" stroke-width="2"/><rect x="18" y="46" width="10" height="6" fill="#5a3020" stroke="#000" stroke-width="2"/><circle cx="14" cy="50" r="5" fill="#3a2018" stroke="#000" stroke-width="2"/><path d="M70,8 L82,18 L86,14 L74,4 Z" fill="#d4a73e" stroke="#000" stroke-width="1.5"/></svg>`;
@@ -2256,6 +2342,7 @@ function renderCard(c) {
       <div class="cardArt">${ART[c.art] || ''}</div>
       <div class="cardType">${c.type.toUpperCase()}</div>
       <div class="cardDesc">${c.desc(c)}</div>
+      <div class="cardFrame"></div>
     </div>`;
   return el;
 }
